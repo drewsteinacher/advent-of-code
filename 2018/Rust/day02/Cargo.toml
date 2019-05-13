@@ -6,3 +6,6 @@ edition = "2018"
 
 [dependencies]
 maplit = "1.0.1"
+strsim = "0.9.2"
+itertools = "0.8.0"
+array_tool = "1.0.3"

@@ -2,10 +2,22 @@
 #[macro_use]
 extern crate maplit; // for hashmap macro for writing hashmap literals in tests
 
+#[macro_use]
+extern crate itertools;
+
+extern crate strsim;
+
+extern crate array_tool;
+
 use std::fs;
 use std::io;
 use std::io::Read;
 use std::collections::HashMap;
+use strsim::hamming;
+use itertools::Itertools;
+
+#[allow(unused_imports)]
+use array_tool::vec::Intersect;
 
 #[derive(Debug)]
 enum CliError {
@@ -25,6 +37,16 @@ fn main() -> Result<(), CliError> {
     let checksum = compute_checksum(&contents)?;
     
     println!("Checksum: {}", checksum);
+    
+    let (id_one, id_two) = get_similar_ids(&contents)?;
+    println!("Similar IDs:");
+    println!("{}", id_one);
+    println!("{}", id_two);
+    println!();
+    
+    let common_characters = get_common_character_string(id_one, id_two);
+    println!("Common characters between the two IDs:");
+    println!("{}", common_characters);
     
     Ok(())
 }
@@ -70,12 +92,35 @@ fn compute_checksum(string: &str) -> Result<u32, CliError> {
     Ok(two_count * three_count)
 }
 
+fn get_similar_ids(string: &str) -> Result<(String, String), CliError> {
+    
+    let lines = string.lines().collect_vec();
+    
+    for (a, b) in iproduct!(&lines, &lines) {
+        if hamming(a, b).unwrap() == 1 {
+            return Ok((a.to_string(), b.to_string()))
+        }
+    }
+    
+    Ok(("a".to_string(), "b".to_string()))
+}
+
+fn get_common_character_string(a: String, b: String) -> String {
+    let mut s = String::new();
+    let other_characters = b.chars().collect_vec();
+    for (i, char) in a.chars().enumerate() {
+        if char == other_characters[i] {
+            s.push(char);
+        }
+    }
+    s
+}
 
 
 #[cfg(test)]
 mod tests {
     
-    use super::{letter_count, compute_checksum};
+    use super::{letter_count, compute_checksum, get_similar_ids, get_common_character_string};
     
     #[test]
     fn test_letter_count() {
@@ -103,5 +148,21 @@ mod tests {
             12,
             compute_checksum("abcdef\nbababc\nabbcde\nabcccd\naabcdd\nabcdee\nababab").unwrap()
         );
+    }
+    
+    #[test]
+    fn test_get_similar_ids() {
+        assert_eq!(
+            ("fghij".to_string(), "fguij".to_string()),
+            get_similar_ids("abcde\nfghij\nklmno\npqrst\nfguij\naxcye\nwvxyz").unwrap()
+        )
+    }
+    
+    #[test]
+    fn test_get_common_character_string() {
+        assert_eq!(
+            "fgij".to_string(),
+            get_common_character_string("fghij".to_string(), "fguij".to_string())
+        )
     }
 }
