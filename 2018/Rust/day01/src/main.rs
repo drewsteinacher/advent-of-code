@@ -22,17 +22,40 @@ impl From<num::ParseIntError> for CliError {
 }
 
 fn main() -> Result<(), CliError> {
+
+    let contents = import_file_string("input.txt")?;
     
-    let path = "input.txt";
+    let resulting_frequency = resulting_frequency(&contents)?;
+    println!("Part 1: Resulting frequency: {}", resulting_frequency);
+    
+    Ok(())
+}
+
+fn import_file_string(filename: &str) -> Result<String, CliError> {
     let mut contents = String::new();
-    fs::File::open(path)?.read_to_string(&mut contents)?;
-    
+    fs::File::open(filename)?.read_to_string(&mut contents)?;
+    Ok(contents)
+}
+
+fn resulting_frequency(input: &str) -> Result<i32, CliError> {
     let mut sum = 0;
-    for line in contents.lines() {
+    for line in input.lines() {
         let change : i32 = line.trim().parse()?;
         sum += change;
     }
-    println!("Part 1: {}", sum);
+    Ok(sum)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::resulting_frequency;
     
-    Ok(())
+    #[test]
+    fn test_resulting_frequency() {
+        assert_eq!(resulting_frequency("+1\n+1\n+1").unwrap(), 3);
+        assert_eq!(resulting_frequency("+1\n+1\n-2").unwrap(), 0);
+        assert_eq!(resulting_frequency("-1\n-2\n-3").unwrap(), -6);
+    }
+}
+
 }
