@@ -5,3 +5,4 @@ authors = ["drewsteinacher <drewsteinacher@gmail.com>"]
 edition = "2018"
 
 [dependencies]
+maplit = "1.0.1"
