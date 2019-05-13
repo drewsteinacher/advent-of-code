@@ -1,3 +1,7 @@
 # IntelliJ IDEA
 **/.idea
 **/*.iml
+
+# Rust
+**/Rust/**/target
+**/Rust/**/*.rs.bk
